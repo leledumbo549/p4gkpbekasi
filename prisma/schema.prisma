@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model tblcalon {
+  NoId    String  @id @db.Char(4)
+  Nama    String? @default("") @db.VarChar(50)
+  Wil     String? @db.Char(2)
+  Umur    Int?    @db.TinyInt
+  Gender  String? @db.Char(1)
+  Penatua String? @default("") @db.VarChar(3)
+  PPJ     String? @default("") @db.VarChar(3)
+}
+
+model tblkuota {
+  Tahap  Int    @db.TinyInt
+  Wil    String @db.Char(2)
+  Posisi Int    @db.TinyInt
+  jumlah Int?   @default(0) @db.TinyInt
+
+  @@id([Tahap, Wil, Posisi])
+}
+
+model tblpemilih {
+  nohp  String  @id @db.VarChar(15)
+  Nama  String? @default("") @db.VarChar(100)
+  NoReg String? @default("") @db.Char(6)
+  Wil   String? @default("") @db.Char(2)
+}
+
+model tblposisi {
+  Posisi     Int     @id @db.TinyInt
+  NamaPosisi String? @db.VarChar(10)
+}
+
+model tblwilayah {
+  Wil     String  @id @db.Char(2)
+  Wilayah String? @default("") @db.VarChar(20)
+}
