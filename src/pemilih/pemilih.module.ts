@@ -8,5 +8,4 @@ import { Calon1Module } from 'src/calon1/calon1.module';
   controllers: [PemilihController],
   providers: [PrismaService],
 })
-
-export class PemilihModule { }
+export class PemilihModule {}

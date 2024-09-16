@@ -7,8 +7,8 @@ import { UsersService } from 'src/users/users.service';
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
-  ) { }
+    private jwtService: JwtService,
+  ) {}
 
   async getUser(username: string, password: string): Promise<User | null> {
     return this.usersService.verifyAndGet(username, password);
@@ -20,6 +20,4 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
-
-
 }

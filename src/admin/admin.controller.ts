@@ -8,8 +8,8 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private prismaService: PrismaService,
-    private calon1Service: Calon1Service
-  ) { }
+    private calon1Service: Calon1Service,
+  ) {}
 
   @Get('updatetotal')
   async updateTotal() {
@@ -22,5 +22,4 @@ export class AdminController {
 
     return ret;
   }
-
 }

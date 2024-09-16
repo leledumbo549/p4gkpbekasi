@@ -1,4 +1,14 @@
-import { Controller, Get, UseGuards, Request, Param, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Request,
+  Param,
+  Post,
+  Body,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
@@ -8,23 +18,23 @@ import { PrismaService } from 'src/prisma.service';
 
 @Controller('pemilih')
 export class PemilihController {
-
   constructor(
     private prismaService: PrismaService,
     private jwtService: JwtService,
-    private calon1Service: Calon1Service
-  ) { }
+    private calon1Service: Calon1Service,
+  ) {}
 
   @Get('notelpon/:nohp')
   async notelpon(@Param('nohp') nohp: string) {
     try {
       const where: Prisma.tblpemilihWhereInput = { nohp };
       const result = await this.prismaService.tblpemilih.findFirst({
-        where, include: {
+        where,
+        include: {
           pilihanPertama: true,
           pilihanKedua: true,
-          pilihanKeduaPPJ: true
-        }
+          pilihanKeduaPPJ: true,
+        },
       });
 
       if (!result) throw new Error('invalid phone number');
@@ -34,7 +44,7 @@ export class PemilihController {
         name: result.Nama.trim(),
         wilayah: result.Wil.trim(),
         voted1: result.pilihanPertama.length > 0,
-        voted2: result.pilihanKedua.length > 0
+        voted2: result.pilihanKedua.length > 0,
       };
     } catch (err) {
       const errMsg = err && err.message ? err.message : 'unknown error';
@@ -46,11 +56,12 @@ export class PemilihController {
   async pemilih(@Param('noreg') noReg: string) {
     const where: Prisma.tblpemilihWhereUniqueInput = { NoReg: noReg };
     const result = await this.prismaService.tblpemilih.findUnique({
-      where, include: {
+      where,
+      include: {
         pilihanPertama: true,
         pilihanKedua: true,
-        pilihanKeduaPPJ: true
-      }
+        pilihanKeduaPPJ: true,
+      },
     });
     return {
       NoReg: result.NoReg.trim(),
@@ -58,7 +69,7 @@ export class PemilihController {
       name: result.Nama.trim(),
       wilayah: result.Wil.trim(),
       voted1: result.pilihanPertama.length > 0,
-      voted2: result.pilihanKedua.length > 0
+      voted2: result.pilihanKedua.length > 0,
     };
   }
 
@@ -66,11 +77,12 @@ export class PemilihController {
   async sendotp(@Param('noreg') noReg: string) {
     const where: Prisma.tblpemilihWhereUniqueInput = { NoReg: noReg };
     const result = await this.prismaService.tblpemilih.findUnique({
-      where, include: {
+      where,
+      include: {
         pilihanPertama: true,
         pilihanKedua: true,
-        pilihanKeduaPPJ: true
-      }
+        pilihanKeduaPPJ: true,
+      },
     });
 
     const notVoted = result.pilihanPertama.length === 0;
@@ -83,14 +95,15 @@ export class PemilihController {
       await this.prismaService.tblpemilih.update({
         data: {
           nohp: result.nohp.trim(),
-          otp
-        }, where
+          otp,
+        },
+        where,
       });
     }
 
     return {
       ok: true,
-      otp
+      otp,
     };
   }
 
@@ -99,21 +112,22 @@ export class PemilihController {
     try {
       const where: Prisma.tblpemilihWhereUniqueInput = { NoReg: noReg };
       const result = await this.prismaService.tblpemilih.findUnique({
-        where, include: {
+        where,
+        include: {
           pilihanPertama: true,
           pilihanKedua: true,
-          pilihanKeduaPPJ: true
-        }
+          pilihanKeduaPPJ: true,
+        },
       });
 
       if (result.otp !== otp) throw new Error('invalid otp');
 
       const token = await this.jwtService.signAsync({
-        noReg
+        noReg,
       });
 
       return {
-        token
+        token,
       };
     } catch (err) {
       const errMsg = err && err.message ? err.message : 'unknown error';
@@ -127,103 +141,108 @@ export class PemilihController {
   async data(@Request() req) {
     const noReg = req.noReg;
     const result = await this.prismaService.tblpemilih.findUnique({
-      where: { NoReg: noReg }
+      where: { NoReg: noReg },
     });
 
     const Wil = result.Wil;
     const Tahap = 1;
 
     const kuotaMJ = await this.prismaService.tblkuota.findFirst({
-      where: { Wil, Tahap, Posisi: 1 }
+      where: { Wil, Tahap, Posisi: 1 },
     });
 
     const kuotaPPJ = await this.prismaService.tblkuota.findFirst({
-      where: { Wil, Tahap, Posisi: 2 }
+      where: { Wil, Tahap, Posisi: 2 },
     });
 
     const calon = await this.prismaService.tblcalon.findMany({
       where: {
-        Wil
-      }
-    })
+        Wil,
+      },
+    });
 
     return {
       noReg,
       wilayah: Wil,
       kuotaMJ: kuotaMJ.jumlah,
       kuotaPPJ: kuotaPPJ.jumlah,
-      calon
+      calon,
     };
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Post('data')
-  async saveData(@Body('mj') mjStr: string, @Body('ppj') ppjStr: string, @Request() req) {
+  async saveData(
+    @Body('mj') mjStr: string,
+    @Body('ppj') ppjStr: string,
+    @Request() req,
+  ) {
     try {
       const noReg = req.noReg;
       const result = await this.prismaService.tblpemilih.findUnique({
-        where: { NoReg: noReg }
+        where: { NoReg: noReg },
       });
 
-      const mjIds = mjStr.split(',')
-      const ppjIds = ppjStr.split(',')
+      const mjIds = mjStr.split(',');
+      const ppjIds = ppjStr.split(',');
       const ids = mjIds.concat(ppjIds);
 
       const Wil = result.Wil;
       const Tahap = 1;
 
       const kuotaMJ = await this.prismaService.tblkuota.findFirst({
-        where: { Wil, Tahap, Posisi: 1 }
+        where: { Wil, Tahap, Posisi: 1 },
       });
 
       const kuotaPPJ = await this.prismaService.tblkuota.findFirst({
-        where: { Wil, Tahap, Posisi: 2 }
+        where: { Wil, Tahap, Posisi: 2 },
       });
 
       if (mjIds.length !== kuotaMJ.jumlah) throw new Error('invalid kuota mj');
-      if (ppjIds.length !== kuotaPPJ.jumlah) throw new Error('invalid kuota ppj');
+      if (ppjIds.length !== kuotaPPJ.jumlah)
+        throw new Error('invalid kuota ppj');
 
-      const dataMJ = mjIds.map(obj => {
+      const dataMJ = mjIds.map((obj) => {
         const a: Prisma.PilihanPertamaCreateManyInput = {
           calonNoId: obj,
           pemilihNoReg: noReg,
-          posisi: 'PENATUA'
-        }
+          posisi: 'PENATUA',
+        };
         return a;
       });
 
-      const dataPPJ = ppjIds.map(obj => {
+      const dataPPJ = ppjIds.map((obj) => {
         const a: Prisma.PilihanPertamaCreateManyInput = {
           calonNoId: obj,
           pemilihNoReg: noReg,
-          posisi: 'PPJ'
-        }
+          posisi: 'PPJ',
+        };
         return a;
       });
 
       await this.prismaService.pilihanPertama.deleteMany({
         where: {
-          pemilihNoReg: noReg
+          pemilihNoReg: noReg,
         },
       });
 
       await this.prismaService.pilihanPertama.createMany({
-        data: dataMJ
+        data: dataMJ,
       });
 
       await this.prismaService.pilihanPertama.createMany({
-        data: dataPPJ
+        data: dataPPJ,
       });
 
       const pilihan = await this.prismaService.pilihanPertama.findMany({
         where: {
-          pemilihNoReg: noReg
+          pemilihNoReg: noReg,
         },
         include: {
-          calon: true
-        }
-      })
+          calon: true,
+        },
+      });
 
       for (const id of ids) {
         await this.calon1Service.updateTotal(id);
@@ -235,6 +254,4 @@ export class PemilihController {
       throw new HttpException(errMsg, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
-
 }

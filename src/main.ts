@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 
+const PORT = process.env.PORT;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -18,11 +20,13 @@ async function bootstrap() {
   app.enableCors();
 
   app.useGlobalPipes(
-    new ValidationPipe(
-      { transform: true, transformOptions: { enableImplicitConversion: true } }
-    )
+    new ValidationPipe({
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
   );
 
-  await app.listen(5000);
+  await app.listen(PORT);
+  console.log('Listening to port ' + PORT);
 }
 bootstrap();

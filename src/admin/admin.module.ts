@@ -9,4 +9,4 @@ import { Calon1Module } from 'src/calon1/calon1.module';
   controllers: [AdminController],
   providers: [AdminService, PrismaService],
 })
-export class AdminModule { }
+export class AdminModule {}

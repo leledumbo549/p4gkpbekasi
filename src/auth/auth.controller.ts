@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UnauthorizedException, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { IsString, MinLength } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
@@ -21,7 +21,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   // @Post()
   // async login(@Body() dto: AuthLoginDTO) {
@@ -38,10 +38,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('local/login')
   async loginLocal(@Body() dto: AuthLoginDTO, @Request() req) {
-    const user = req.user;
     return this.authService.getToken(req.user);
   }
-
 }
 
 // curl -X POST http://localhost:3000/auth/login -d '{"username": "admin", "password": "123123"}' -H "Content-Type: application/json"

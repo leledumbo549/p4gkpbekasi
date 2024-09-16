@@ -3,16 +3,14 @@ import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class Calon1Service {
-  constructor(
-    private prismaService: PrismaService
-  ) { }
-  
+  constructor(private prismaService: PrismaService) {}
+
   async updateTotal(NoId: string) {
     const obj = await this.prismaService.tblcalon.findUnique({
       where: { NoId },
       include: {
-        pemilih: true
-      }
+        pemilih: true,
+      },
     });
 
     let totMJ = 0;
@@ -26,8 +24,8 @@ export class Calon1Service {
       where: { NoId },
       data: {
         Total: totMJ,
-        TotalPPJ: totPPJ
-      }
+        TotalPPJ: totPPJ,
+      },
     });
 
     return result;

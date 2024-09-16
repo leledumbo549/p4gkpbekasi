@@ -14,11 +14,16 @@ import { WabotModule } from './wabot/wabot.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '../public')
+      rootPath: join(__dirname, '..', '../public'),
     }),
-    UsersModule, 
-    AuthModule, Calon1Module, AdminModule, PemilihModule, WabotModule],
+    UsersModule,
+    AuthModule,
+    Calon1Module,
+    AdminModule,
+    PemilihModule,
+    WabotModule,
+  ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
-export class AppModule { }
+export class AppModule {}

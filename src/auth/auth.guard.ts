@@ -9,9 +9,7 @@ import { Request } from 'express';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(
-    private jwtService: JwtService
-  ) { }
+  constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -22,11 +20,9 @@ export class AuthGuard implements CanActivate {
 
     try {
       const secret = process.env.JWT_SECRET;
-      const payload = await this.jwtService.verifyAsync(
-        token, { secret }
-      );
+      const payload = await this.jwtService.verifyAsync(token, { secret });
       const noReg = payload.noReg;
-      console.log(payload)
+      console.log(payload);
       request['noReg'] = noReg;
     } catch (err) {
       console.log(err);

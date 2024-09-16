@@ -1,12 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { Calon1Service } from './calon1.service';
-import { ApiBearerAuth, ApiProperty } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt.guard';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { Prisma } from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 import { PrismaService } from 'src/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthGuard } from 'src/auth/auth.guard';
 import * as moment from 'moment';
 
 class FindAllDTO {
@@ -21,26 +18,26 @@ export class Calon1Controller {
   constructor(
     private readonly calon1Service: Calon1Service,
     private prismaService: PrismaService,
-    private jwtService: JwtService
-  ) { }
+    private jwtService: JwtService,
+  ) {}
 
   @Get('/votes')
-  async findVotes(@Query() dto: FindAllDTO, @Request() req) {
-    const userId = req.user?.id;
+  async findVotes(@Query() dto: FindAllDTO) {
     let where = {};
 
-    if (dto.wilayah && dto.wilayah.length === 2) where = {
-      pemilih: {
-        Wil: dto.wilayah
-      }
-    }
+    if (dto.wilayah && dto.wilayah.length === 2)
+      where = {
+        pemilih: {
+          Wil: dto.wilayah,
+        },
+      };
 
     const args = {
       where,
       include: {
         calon: true,
-        pemilih: true
-      }
+        pemilih: true,
+      },
     };
     const rows = await this.prismaService.pilihanPertama.findMany(args);
 
@@ -50,7 +47,7 @@ export class Calon1Controller {
     // <td>{row.posisi}</td>
     // <td>{row.calon.Wil}</td>
     // <td>{row.createdAt}</td>
-    const result = rows.map(row => {
+    const result = rows.map((row) => {
       return {
         id: row.id,
         pemilihWil: row.pemilih.Wil,
@@ -58,23 +55,20 @@ export class Calon1Controller {
         calonWil: row.calon.Wil,
         calonNama: row.calon.Nama,
         posisi: row.posisi,
-        createdAt: moment(row.createdAt).format('DD-MM-YYYY HH:mm:ss')
-      }
+        createdAt: moment(row.createdAt).format('DD-MM-YYYY HH:mm:ss'),
+      };
     });
     return result;
   }
 
   @Get('/list')
-  async findAll(@Query() dto: FindAllDTO, @Request() req) {
-    const userId = req.user?.id;
-
+  async findAll(@Query() dto: FindAllDTO) {
     let where = {};
     if (dto.wilayah && dto.wilayah.length === 2) where = { Wil: dto.wilayah };
     const args = {
-      where
+      where,
     };
     const result = await this.prismaService.tblcalon.findMany(args);
     return result;
   }
-
 }
