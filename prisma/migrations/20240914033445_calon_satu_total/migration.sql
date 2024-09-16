@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `tblcalon` ADD COLUMN `Total` INTEGER NOT NULL DEFAULT 0;
