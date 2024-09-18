@@ -12,10 +12,11 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
-import axios from 'axios';
+// import axios from 'axios';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Calon1Service } from 'src/calon1/calon1.service';
 import { PrismaService } from 'src/prisma.service';
+import { WabotService } from 'src/wabot/wabot.service';
 
 @Controller('pemilih')
 export class PemilihController {
@@ -23,6 +24,7 @@ export class PemilihController {
     private prismaService: PrismaService,
     private jwtService: JwtService,
     private calon1Service: Calon1Service,
+    private wabotService: WabotService,
   ) {}
 
   @Get('notelpon/:nohp')
@@ -90,6 +92,7 @@ export class PemilihController {
     if (!notVoted) throw new Error('invalid sendotp');
 
     let otp = result.otp;
+    const nohp = result.nohp.trim();
 
     if (!otp) {
       otp = (Math.floor(Math.random() * 999999) + '').padStart(6, '0');
@@ -108,17 +111,24 @@ export class PemilihController {
     };
 
     // todo: send otp
-    const name = result.Nama;
-    const wilayah = result.Wil;
-    let msg =
-      name + ' dari wilayah ' + wilayah + ', kode rahasia Anda adalah: ' + otp;
-    msg = encodeURIComponent(msg);
-    const nohp = result.nohp;
+    // const name = result.Nama;
+    // const wilayah = result.Wil;
+    // let msg =
+    //   name + ' dari wilayah ' + wilayah + ', kode rahasia Anda adalah: ' + otp;
+    // msg = encodeURIComponent(msg);
+    // const nohp = result.nohp;
+
+    // try {
+    //   const url = 'http://localhost:60000?nohp=' + nohp + '&msg=' + msg;
+    //   console.log(url);
+    //   await axios.get(url);
+    //   ret.sent = true;
+    // } catch (err) {
+    //   console.error(err);
+    // }
 
     try {
-      const url = 'http://localhost:60000?nohp=' + nohp + '&msg=' + msg;
-      console.log(url);
-      await axios.get(url);
+      await this.wabotService.sendOTP(nohp, otp);
       ret.sent = true;
     } catch (err) {
       console.error(err);

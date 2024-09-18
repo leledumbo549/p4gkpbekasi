@@ -6,5 +6,6 @@ import { PrismaService } from 'src/prisma.service';
 @Module({
   controllers: [WabotController],
   providers: [WabotService, PrismaService],
+  exports: [WabotService],
 })
 export class WabotModule {}
