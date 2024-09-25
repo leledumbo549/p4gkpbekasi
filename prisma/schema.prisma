@@ -39,6 +39,7 @@ model tblpemilih {
   pilihanPertama  PilihanPertama[]
   pilihanKedua    PilihanKedua[]
   pilihanKeduaPPJ PilihanKeduaPPJ[]
+  numSent         Int               @default(0)
 }
 
 model tblposisi {

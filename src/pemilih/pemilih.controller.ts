@@ -25,7 +25,7 @@ export class PemilihController {
     private jwtService: JwtService,
     private calon1Service: Calon1Service,
     private wabotService: WabotService,
-  ) {}
+  ) { }
 
   @Get('notelpon/:nohp')
   async notelpon(@Param('nohp') nohp: string) {
@@ -91,6 +91,9 @@ export class PemilihController {
     const notVoted = result.pilihanPertama.length === 0;
     if (!notVoted) throw new Error('invalid sendotp');
 
+    const numSent = result.numSent;
+    const NoReg = result.NoReg;
+
     let otp = result.otp;
     const nohp = result.nohp.trim();
 
@@ -127,11 +130,14 @@ export class PemilihController {
     //   console.error(err);
     // }
 
-    try {
-      await this.wabotService.sendOTP(nohp, otp);
-      ret.sent = true;
-    } catch (err) {
-      console.error(err);
+    if (numSent === 0) {
+      try {
+        await this.wabotService.sendOTP(nohp, otp);
+        await this.prismaService.tblpemilih.update({ data: { numSent: (numSent + 1) }, where: { NoReg } });
+        ret.sent = true;
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     return ret;
@@ -229,9 +235,9 @@ export class PemilihController {
         where: { Wil, Tahap, Posisi: 2 },
       });
 
-      if (mjIds.length !== kuotaMJ.jumlah) throw new Error('invalid kuota mj');
+      if (mjIds.length < kuotaMJ.jumlah || mjIds.length > (kuotaMJ.jumlah + 2)) throw new Error('Kuota calon penatua tidak sesuai.');
       if (ppjIds.length !== kuotaPPJ.jumlah)
-        throw new Error('invalid kuota ppj');
+        throw new Error('Kuota calon ppj tidak sesuai.');
 
       const dataMJ = mjIds.map((obj) => {
         const a: Prisma.PilihanPertamaCreateManyInput = {
