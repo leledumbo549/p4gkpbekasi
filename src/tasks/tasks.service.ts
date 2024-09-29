@@ -10,10 +10,11 @@ export class TasksService {
     private prismaService: PrismaService
   ) {
     this.busy = false;
+
   }
 
 
-  @Interval(60000)
+  @Interval(180000)
   async update() {
     if (this.busy) return;
     this.busy = true;
@@ -26,6 +27,8 @@ export class TasksService {
         pemilih: true,
       },
     });
+
+    console.log(rows.length);
 
     for (const row of rows) {
       let totMJ = 0;

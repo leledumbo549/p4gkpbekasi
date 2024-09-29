@@ -123,3 +123,13 @@ model PilihanKeduaPPJ {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Pengaturan {
+  id Int @id @default(autoincrement())
+
+  openPemilihan1 Boolean @default(false)
+  openPemilihan2 Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

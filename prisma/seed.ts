@@ -17,8 +17,11 @@ async function main() {
     })
   }
 
-  await create('admin', '123123', 'admin');
-  await create('viewer', '123123', 'viewer');
+  await create('admin', 'gkpbekasijaya24', 'admin');
+  await create('viewer', 'gkpbksmaju2024', 'viewer');
+
+  const p = await prisma.pengaturan.findFirst();
+  if (!p) await prisma.pengaturan.create({ data: {} });
 }
 main()
   .then(async () => {

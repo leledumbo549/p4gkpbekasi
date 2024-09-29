@@ -30,6 +30,8 @@ export class PemilihController {
   @Get('notelpon/:nohp')
   async notelpon(@Param('nohp') nohp: string) {
     try {
+      const p = await this.prismaService.pengaturan.findFirst();
+      const open = p.openPemilihan1 === true;
       const where: Prisma.tblpemilihWhereInput = { nohp };
       const result = await this.prismaService.tblpemilih.findFirst({
         where,
@@ -48,6 +50,7 @@ export class PemilihController {
         wilayah: result.Wil.trim(),
         voted1: result.pilihanPertama.length > 0,
         voted2: result.pilihanKedua.length > 0,
+        open
       };
     } catch (err) {
       const errMsg = err && err.message ? err.message : 'unknown error';
@@ -57,6 +60,9 @@ export class PemilihController {
 
   @Get('pemilih/:noreg')
   async pemilih(@Param('noreg') noReg: string) {
+    const p = await this.prismaService.pengaturan.findFirst();
+    console.log(p);
+    const open = p.openPemilihan1 === true;
     const where: Prisma.tblpemilihWhereUniqueInput = { NoReg: noReg };
     const result = await this.prismaService.tblpemilih.findUnique({
       where,
@@ -73,6 +79,7 @@ export class PemilihController {
       wilayah: result.Wil.trim(),
       voted1: result.pilihanPertama.length > 0,
       voted2: result.pilihanKedua.length > 0,
+      open
     };
   }
 
