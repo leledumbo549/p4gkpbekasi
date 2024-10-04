@@ -17,7 +17,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { Calon1Service } from 'src/calon1/calon1.service';
 import { PrismaService } from 'src/prisma.service';
 import { WabotService } from 'src/wabot/wabot.service';
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
 @Controller('pemilih')
 export class PemilihController {
@@ -26,7 +26,7 @@ export class PemilihController {
     private jwtService: JwtService,
     private calon1Service: Calon1Service,
     private wabotService: WabotService,
-  ) { }
+  ) {}
 
   @Get('notelpon/:nohp')
   async notelpon(@Param('nohp') nohp: string) {
@@ -51,7 +51,7 @@ export class PemilihController {
         wilayah: result.Wil.trim(),
         voted1: result.pilihanPertama.length > 0,
         voted2: result.pilihanKedua.length > 0,
-        open
+        open,
       };
     } catch (err) {
       const errMsg = err && err.message ? err.message : 'unknown error';
@@ -80,7 +80,7 @@ export class PemilihController {
       wilayah: result.Wil.trim(),
       voted1: result.pilihanPertama.length > 0,
       voted2: result.pilihanKedua.length > 0,
-      open
+      open,
     };
   }
 
@@ -141,7 +141,10 @@ export class PemilihController {
     if (numSent === 0) {
       try {
         await this.wabotService.sendOTP(nohp, otp);
-        await this.prismaService.tblpemilih.update({ data: { numSent: (numSent + 1) }, where: { NoReg } });
+        await this.prismaService.tblpemilih.update({
+          data: { numSent: numSent + 1 },
+          where: { NoReg },
+        });
         ret.sent = true;
       } catch (err) {
         console.error(err);
@@ -243,7 +246,8 @@ export class PemilihController {
         where: { Wil, Tahap, Posisi: 2 },
       });
 
-      if (mjIds.length < kuotaMJ.jumlah || mjIds.length > (kuotaMJ.jumlah + 2)) throw new Error('Kuota calon penatua tidak sesuai.');
+      if (mjIds.length < kuotaMJ.jumlah || mjIds.length > kuotaMJ.jumlah + 2)
+        throw new Error('Kuota calon penatua tidak sesuai.');
       if (ppjIds.length !== kuotaPPJ.jumlah)
         throw new Error('Kuota calon ppj tidak sesuai.');
 
@@ -277,7 +281,7 @@ export class PemilihController {
         prisma.pilihanPertama.createMany({
           data: dataALL,
         }),
-      ])
+      ]);
 
       // await this.prismaService.pilihanPertama.deleteMany({
       //   where: {
