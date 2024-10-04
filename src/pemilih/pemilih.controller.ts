@@ -17,6 +17,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { Calon1Service } from 'src/calon1/calon1.service';
 import { PrismaService } from 'src/prisma.service';
 import { WabotService } from 'src/wabot/wabot.service';
+import * as _ from "lodash";
 
 @Controller('pemilih')
 export class PemilihController {
@@ -227,8 +228,8 @@ export class PemilihController {
         where: { NoReg: noReg },
       });
 
-      const mjIds = mjStr.split(',');
-      const ppjIds = ppjStr.split(',');
+      const mjIds = _.uniq(mjStr.split(','));
+      const ppjIds = _.uniq(ppjStr.split(','));
       const ids = mjIds.concat(ppjIds);
 
       const Wil = result.Wil;
@@ -264,19 +265,33 @@ export class PemilihController {
         return a;
       });
 
-      await this.prismaService.pilihanPertama.deleteMany({
-        where: {
-          pemilihNoReg: noReg,
-        },
-      });
+      const dataALL = dataMJ.concat(dataPPJ);
+      const prisma = this.prismaService;
 
-      await this.prismaService.pilihanPertama.createMany({
-        data: dataMJ,
-      });
+      await prisma.$transaction([
+        prisma.pilihanPertama.deleteMany({
+          where: {
+            pemilihNoReg: noReg,
+          },
+        }),
+        prisma.pilihanPertama.createMany({
+          data: dataALL,
+        }),
+      ])
 
-      await this.prismaService.pilihanPertama.createMany({
-        data: dataPPJ,
-      });
+      // await this.prismaService.pilihanPertama.deleteMany({
+      //   where: {
+      //     pemilihNoReg: noReg,
+      //   },
+      // });
+
+      // await this.prismaService.pilihanPertama.createMany({
+      //   data: dataMJ,
+      // });
+
+      // await this.prismaService.pilihanPertama.createMany({
+      //   data: dataPPJ,
+      // });
 
       const pilihan = await this.prismaService.pilihanPertama.findMany({
         where: {
