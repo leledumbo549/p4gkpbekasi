@@ -20,6 +20,6 @@ export class AdminController {
       if (result.Total > 0 || result.TotalPPJ > 0) ret.push(result);
     }
 
-    return ret;
+    return [];
   }
 }

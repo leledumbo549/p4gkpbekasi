@@ -167,6 +167,15 @@ export class PemilihController {
         },
       });
 
+      if (result.numTry >= 5) throw new Error('blocked');
+
+      await this.prismaService.tblpemilih.update({
+        where,
+        data: {
+          numTry: result.numTry > 0 ? result.numTry + 1 : 1,
+        },
+      });
+
       if (result.otp !== otp) throw new Error('invalid otp');
 
       const token = await this.jwtService.signAsync({

@@ -58,7 +58,8 @@ export class Calon1Controller {
         createdAt: moment(row.createdAt).format('DD-MM-YYYY HH:mm:ss'),
       };
     });
-    return result;
+    // return result;
+    return [];
   }
 
   @Get('/list')
@@ -69,6 +70,7 @@ export class Calon1Controller {
       where,
     };
     const result = await this.prismaService.tblcalon.findMany(args);
-    return result;
+    // return result;
+    return [];
   }
 }

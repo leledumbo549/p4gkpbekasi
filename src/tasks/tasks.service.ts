@@ -6,13 +6,9 @@ import { PrismaService } from 'src/prisma.service';
 export class TasksService {
   busy: boolean;
 
-  constructor(
-    private prismaService: PrismaService
-  ) {
+  constructor(private prismaService: PrismaService) {
     this.busy = false;
-
   }
-
 
   @Interval(180000)
   async update() {

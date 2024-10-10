@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `tblpemilih` ADD COLUMN `numTry` INTEGER NOT NULL DEFAULT 0;
