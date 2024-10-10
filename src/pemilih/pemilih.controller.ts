@@ -215,6 +215,17 @@ export class PemilihController {
       where: {
         Wil,
       },
+      select: {
+        NoId: true,
+        Nama: true,
+        Wil: true,
+        Umur: true,
+        Gender: true,
+        Penatua: true,
+        PPJ: true,
+        Total: false,
+        TotalPPJ: false,
+      },
     });
 
     return {
