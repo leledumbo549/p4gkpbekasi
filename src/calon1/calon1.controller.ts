@@ -1,10 +1,11 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { Calon1Service } from './calon1.service';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 import { PrismaService } from 'src/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
 
 class FindAllDTO {
   @ApiProperty({ default: 'ALL', required: false })
@@ -21,6 +22,8 @@ export class Calon1Controller {
     private jwtService: JwtService,
   ) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('/votes')
   async findVotes(@Query() dto: FindAllDTO) {
     let where = {};
@@ -58,10 +61,12 @@ export class Calon1Controller {
         createdAt: moment(row.createdAt).format('DD-MM-YYYY HH:mm:ss'),
       };
     });
-    // return result;
-    return [];
+    return result;
+    // return [];
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('/list')
   async findAll(@Query() dto: FindAllDTO) {
     let where = {};
@@ -70,7 +75,7 @@ export class Calon1Controller {
       where,
     };
     const result = await this.prismaService.tblcalon.findMany(args);
-    // return result;
-    return [];
+    return result;
+    // return [];
   }
 }
