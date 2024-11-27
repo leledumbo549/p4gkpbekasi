@@ -26,7 +26,7 @@ export class PemilihController {
     private jwtService: JwtService,
     private calon1Service: Calon1Service,
     private wabotService: WabotService,
-  ) {}
+  ) { }
 
   @Get('notelpon/:nohp')
   async notelpon(@Param('nohp') nohp: string) {
@@ -331,6 +331,185 @@ export class PemilihController {
       }
 
       return pilihan;
+    } catch (err) {
+      const errMsg = err && err.message ? err.message : 'unknown error';
+      throw new HttpException(errMsg, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard)
+  @Get('data2')
+  async data2(@Request() req) {
+    const noReg = req.noReg ? req.noReg : "0";
+    const result = await this.prismaService.tblpemilih.findUnique({
+      where: { NoReg: noReg },
+    });
+
+    const rows = [];
+    const ret = {
+      noReg,
+      penatua: [],
+      ppj: []
+    }
+
+    for (let i = 0; i < 12; i++) {
+      const Wil = ((i + 1) + '').padStart(2, '0');
+      const Tahap = 2;
+
+      const kuotaMJ = await this.prismaService.tblkuota.findFirst({
+        where: { Wil, Tahap, Posisi: 1 },
+      });
+
+      console.log(kuotaMJ)
+
+      const kuotaPPJ = await this.prismaService.tblkuota.findFirst({
+        where: { Wil, Tahap, Posisi: 2 },
+      });
+
+      console.log(kuotaPPJ)
+
+      const calon = await this.prismaService.tblcalon2.findMany({
+        where: {
+          Wil,
+          Jabatan: 'PENATUA'
+        },
+        select: {
+          NoId: true,
+          Nama: true,
+          Wil: true,
+          Umur: true,
+          Gender: true,
+          Jabatan: true,
+          Ranking: true
+        },
+      });
+
+      rows.push({
+        wilayah: Wil,
+        kuotaMJ: kuotaMJ.jumlah,
+        calon,
+      });
+    }
+
+    ret.penatua = rows;
+
+    const calonppj = await this.prismaService.tblcalon2.findMany({
+      where: {
+        Jabatan: 'PPJ'
+      },
+      select: {
+        NoId: true,
+        Nama: true,
+        Wil: true,
+        Umur: true,
+        Gender: true,
+        Jabatan: true,
+        Ranking: true
+      },
+    });
+
+    ret.ppj = calonppj;
+
+
+    return ret;
+  }
+
+  // @ApiBearerAuth()
+  // @UseGuards(AuthGuard)
+  @Post('data2')
+  async saveData2(
+    @Body('mjs') mjs: any, // [{Wil,pilihan:[string]}]
+    @Body('ppjs') ppjs: Array<string>, // [string]
+    @Request() req,
+  ) {
+    try {
+      const noReg = req.noReg ? req.noReg : '001000';
+      const result = await this.prismaService.tblpemilih.findUnique({
+        where: { NoReg: noReg },
+      });
+
+      let mjIds = [];
+      const ppjIds: Array<string> = _.uniq(ppjs);
+      if (ppjIds.length !== 9) throw new Error('Kuota PPJ tidak valid.');
+
+      const Tahap = 2;
+      const toSave = [];
+
+      const check = _.uniq(_.map(mjs, 'Wil'));
+      if (check.length !== 12) throw new Error('Data belum lengkap');
+
+      // validasi kuota & pilihan
+      for (let i = 0; i < mjs.length; i++) {
+        const mj = mjs[i];
+        const Wil = mj.Wil;
+        const pilihan: Array<string> = _.uniq(mj.pilihan);
+
+        const kuotaMJ = await this.prismaService.tblkuota.findFirst({
+          where: { Wil, Tahap, Posisi: 1 },
+        });
+
+        if (pilihan.length !== kuotaMJ.jumlah) throw new Error('Kuota wilayah ' + Wil + ' tidak valid. ' + kuotaMJ.jumlah);
+
+        const calon = await this.prismaService.tblcalon2.findMany({
+          where: {
+            Wil,
+            Jabatan: 'PENATUA'
+          }
+        });
+
+        const valid = calon.map(row => {
+          return row.NoId;
+        })
+
+        for (let j = 0; j < pilihan.length; j++) {
+          const NoId = pilihan[j];
+          if (valid.indexOf(NoId) < 0) throw new Error('Pilihan wilayah ' + Wil + ': ' + NoId + ' tidak valid.');
+
+          const a: Prisma.PilihanKeduaCreateManyInput = {
+            pemilihNoReg: noReg,
+            calonNoId: NoId
+          }
+
+          toSave.push(a);
+        }
+      }
+
+      for (let i = 0; i < ppjIds.length; i++) {
+        const a: Prisma.PilihanKeduaCreateManyInput = {
+          pemilihNoReg: noReg,
+          calonNoId: ppjIds[i]
+        }
+        toSave.push(a);
+      }
+
+      const prisma = this.prismaService;
+
+      await prisma.$transaction([
+        prisma.pilihanKedua.deleteMany({
+          where: {
+            pemilihNoReg: noReg,
+          },
+        }),
+        prisma.pilihanKedua.createMany({
+          data: toSave,
+        }),
+      ]);
+
+      const pilihan = await this.prismaService.pilihanKedua.findMany({
+        where: {
+          pemilihNoReg: noReg,
+        },
+        include: {
+          calon: true,
+        },
+      });
+
+      await this.calon1Service.updateTotal2();
+
+      return {
+        pilihan
+      };
     } catch (err) {
       const errMsg = err && err.message ? err.message : 'unknown error';
       throw new HttpException(errMsg, HttpStatus.INTERNAL_SERVER_ERROR);

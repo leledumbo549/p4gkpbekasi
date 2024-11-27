@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class Calon1Service {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: PrismaService) { }
 
   async updateTotal(NoId: string) {
     const obj = await this.prismaService.tblcalon.findUnique({
@@ -30,4 +30,23 @@ export class Calon1Service {
 
     return result;
   }
+
+  async updateTotal2() {
+    const rows = await this.prismaService.tblcalon2.findMany({
+      include: {
+        pemilih: true,
+      },
+    });
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      await this.prismaService.tblcalon2.update({
+        where: { NoId: row.NoId },
+        data: {
+          Total: row.pemilih.length
+        },
+      });
+    }
+  }
+
 }
