@@ -26,7 +26,7 @@ export class PemilihController {
     private jwtService: JwtService,
     private calon1Service: Calon1Service,
     private wabotService: WabotService,
-  ) { }
+  ) {}
 
   @Get('notelpon/:nohp')
   async notelpon(@Param('nohp') nohp: string) {
@@ -341,8 +341,8 @@ export class PemilihController {
   // @UseGuards(AuthGuard)
   @Get('data2')
   async data2(@Request() req) {
-    const noReg = req.noReg ? req.noReg : "0";
-    const result = await this.prismaService.tblpemilih.findUnique({
+    const noReg = req.noReg ? req.noReg : '0';
+    await this.prismaService.tblpemilih.findUnique({
       where: { NoReg: noReg },
     });
 
@@ -350,29 +350,29 @@ export class PemilihController {
     const ret = {
       noReg,
       penatua: [],
-      ppj: []
-    }
+      ppj: [],
+    };
 
     for (let i = 0; i < 12; i++) {
-      const Wil = ((i + 1) + '').padStart(2, '0');
+      const Wil = (i + 1 + '').padStart(2, '0');
       const Tahap = 2;
 
       const kuotaMJ = await this.prismaService.tblkuota.findFirst({
         where: { Wil, Tahap, Posisi: 1 },
       });
 
-      console.log(kuotaMJ)
+      console.log(kuotaMJ);
 
       const kuotaPPJ = await this.prismaService.tblkuota.findFirst({
         where: { Wil, Tahap, Posisi: 2 },
       });
 
-      console.log(kuotaPPJ)
+      console.log(kuotaPPJ);
 
       const calon = await this.prismaService.tblcalon2.findMany({
         where: {
           Wil,
-          Jabatan: 'PENATUA'
+          Jabatan: 'PENATUA',
         },
         select: {
           NoId: true,
@@ -381,7 +381,7 @@ export class PemilihController {
           Umur: true,
           Gender: true,
           Jabatan: true,
-          Ranking: true
+          Ranking: true,
         },
       });
 
@@ -396,7 +396,7 @@ export class PemilihController {
 
     const calonppj = await this.prismaService.tblcalon2.findMany({
       where: {
-        Jabatan: 'PPJ'
+        Jabatan: 'PPJ',
       },
       select: {
         NoId: true,
@@ -405,12 +405,11 @@ export class PemilihController {
         Umur: true,
         Gender: true,
         Jabatan: true,
-        Ranking: true
+        Ranking: true,
       },
     });
 
     ret.ppj = calonppj;
-
 
     return ret;
   }
@@ -424,12 +423,11 @@ export class PemilihController {
     @Request() req,
   ) {
     try {
-      const noReg = req.noReg ? req.noReg : '001000';
-      const result = await this.prismaService.tblpemilih.findUnique({
+      const noReg = req.noReg ? req.noReg : '0';
+      await this.prismaService.tblpemilih.findUnique({
         where: { NoReg: noReg },
       });
 
-      let mjIds = [];
       const ppjIds: Array<string> = _.uniq(ppjs);
       if (ppjIds.length !== 9) throw new Error('Kuota PPJ tidak valid.');
 
@@ -449,27 +447,33 @@ export class PemilihController {
           where: { Wil, Tahap, Posisi: 1 },
         });
 
-        if (pilihan.length !== kuotaMJ.jumlah) throw new Error('Kuota wilayah ' + Wil + ' tidak valid. ' + kuotaMJ.jumlah);
+        if (pilihan.length !== kuotaMJ.jumlah)
+          throw new Error(
+            'Kuota wilayah ' + Wil + ' tidak valid. ' + kuotaMJ.jumlah,
+          );
 
         const calon = await this.prismaService.tblcalon2.findMany({
           where: {
             Wil,
-            Jabatan: 'PENATUA'
-          }
+            Jabatan: 'PENATUA',
+          },
         });
 
-        const valid = calon.map(row => {
+        const valid = calon.map((row) => {
           return row.NoId;
-        })
+        });
 
         for (let j = 0; j < pilihan.length; j++) {
           const NoId = pilihan[j];
-          if (valid.indexOf(NoId) < 0) throw new Error('Pilihan wilayah ' + Wil + ': ' + NoId + ' tidak valid.');
+          if (valid.indexOf(NoId) < 0)
+            throw new Error(
+              'Pilihan wilayah ' + Wil + ': ' + NoId + ' tidak valid.',
+            );
 
           const a: Prisma.PilihanKeduaCreateManyInput = {
             pemilihNoReg: noReg,
-            calonNoId: NoId
-          }
+            calonNoId: NoId,
+          };
 
           toSave.push(a);
         }
@@ -478,8 +482,8 @@ export class PemilihController {
       for (let i = 0; i < ppjIds.length; i++) {
         const a: Prisma.PilihanKeduaCreateManyInput = {
           pemilihNoReg: noReg,
-          calonNoId: ppjIds[i]
-        }
+          calonNoId: ppjIds[i],
+        };
         toSave.push(a);
       }
 
@@ -508,7 +512,7 @@ export class PemilihController {
       await this.calon1Service.updateTotal2();
 
       return {
-        pilihan
+        pilihan,
       };
     } catch (err) {
       const errMsg = err && err.message ? err.message : 'unknown error';

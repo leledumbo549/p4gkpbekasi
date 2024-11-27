@@ -20,7 +20,7 @@ export class Calon1Controller {
     private readonly calon1Service: Calon1Service,
     private prismaService: PrismaService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -84,7 +84,7 @@ export class Calon1Controller {
   @Get('/listpenatua2')
   async findAll2(@Query() dto: FindAllDTO) {
     let where: any = {
-      Jabatan: 'PENATUA'
+      Jabatan: 'PENATUA',
     };
     if (dto.wilayah && dto.wilayah.length === 2) {
       where = { Wil: dto.wilayah, Jabatan: 'PENATUA' };
@@ -100,15 +100,14 @@ export class Calon1Controller {
   // @ApiBearerAuth()
   // @UseGuards(JwtAuthGuard)
   @Get('/listppj2')
-  async findAllPPJ2(@Query() dto: FindAllDTO) {
-    let where: any = {
-      Jabatan: 'PPJ'
+  async findAllPPJ2() {
+    const where: any = {
+      Jabatan: 'PPJ',
     };
     const args = {
       where,
     };
     const result = await this.prismaService.tblcalon2.findMany(args);
     return result;
-    // return [];
   }
 }

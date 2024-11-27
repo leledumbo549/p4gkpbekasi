@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class Calon1Service {
-  constructor(private prismaService: PrismaService) { }
+  constructor(private prismaService: PrismaService) {}
 
   async updateTotal(NoId: string) {
     const obj = await this.prismaService.tblcalon.findUnique({
@@ -43,10 +43,9 @@ export class Calon1Service {
       await this.prismaService.tblcalon2.update({
         where: { NoId: row.NoId },
         data: {
-          Total: row.pemilih.length
+          Total: row.pemilih.length,
         },
       });
     }
   }
-
 }
