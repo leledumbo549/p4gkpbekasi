@@ -96,8 +96,8 @@ export class PemilihController {
       },
     });
 
-    const notVoted = result.pilihanPertama.length === 0;
-    if (!notVoted) throw new Error('invalid sendotp');
+    // const notVoted = result.pilihanPertama.length === 0;
+    // if (!notVoted) throw new Error('invalid sendotp');
 
     const numSent = result.numSent;
     const NoReg = result.NoReg;
@@ -337,8 +337,8 @@ export class PemilihController {
     }
   }
 
-  // @ApiBearerAuth()
-  // @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get('data2')
   async data2(@Request() req) {
     const noReg = req.noReg ? req.noReg : '0';
@@ -414,8 +414,8 @@ export class PemilihController {
     return ret;
   }
 
-  // @ApiBearerAuth()
-  // @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Post('data2')
   async saveData2(
     @Body('mjs') mjs: any, // [{Wil,pilihan:[string]}]
