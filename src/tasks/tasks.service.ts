@@ -10,14 +10,55 @@ export class TasksService {
     this.busy = false;
   }
 
+  // @Interval(180000)
+  // async update() {
+  //   if (this.busy) return;
+  //   this.busy = true;
+
+  //   console.log('update total tiap calon..');
+
+  //   const rows = await this.prismaService.tblcalon.findMany({
+  //     where: {},
+  //     include: {
+  //       pemilih: true,
+  //     },
+  //   });
+
+  //   console.log(rows.length);
+
+  //   for (const row of rows) {
+  //     let totMJ = 0;
+  //     let totPPJ = 0;
+  //     for (const p of row.pemilih) {
+  //       if (p.posisi === 'PENATUA') totMJ++;
+  //       if (p.posisi === 'PPJ') totPPJ++;
+  //     }
+
+  //     if (totMJ !== row.Total || totPPJ !== row.TotalPPJ) {
+  //       const result = await this.prismaService.tblcalon.update({
+  //         where: { NoId: row.NoId },
+  //         data: {
+  //           Total: totMJ,
+  //           TotalPPJ: totPPJ,
+  //         },
+  //       });
+
+  //       console.log(result);
+  //     } else {
+  //     }
+  //   }
+
+  //   this.busy = false;
+  // }
+
   @Interval(180000)
-  async update() {
+  async update2() {
     if (this.busy) return;
     this.busy = true;
 
     console.log('update total tiap calon..');
 
-    const rows = await this.prismaService.tblcalon.findMany({
+    const rows = await this.prismaService.tblcalon2.findMany({
       where: {},
       include: {
         pemilih: true,
@@ -27,19 +68,14 @@ export class TasksService {
     console.log(rows.length);
 
     for (const row of rows) {
-      let totMJ = 0;
-      let totPPJ = 0;
-      for (const p of row.pemilih) {
-        if (p.posisi === 'PENATUA') totMJ++;
-        if (p.posisi === 'PPJ') totPPJ++;
-      }
+      const total =
+        row.pemilih && row.pemilih.length > 0 ? row.pemilih.length : 0;
 
-      if (totMJ !== row.Total || totPPJ !== row.TotalPPJ) {
-        const result = await this.prismaService.tblcalon.update({
+      if (total !== row.Total) {
+        const result = await this.prismaService.tblcalon2.update({
           where: { NoId: row.NoId },
           data: {
-            Total: totMJ,
-            TotalPPJ: totPPJ,
+            Total: total,
           },
         });
 

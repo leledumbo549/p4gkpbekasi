@@ -84,11 +84,20 @@ export class Calon1Controller {
   @Get('/listpenatua2')
   async findAll2(@Query() dto: FindAllDTO) {
     let where: any = {
-      Jabatan: 'PENATUA',
+      // Jabatan: 'PENATUA',
     };
+
     if (dto.wilayah && dto.wilayah.length === 2) {
-      where = { Wil: dto.wilayah, Jabatan: 'PENATUA' };
+      where = {
+        Wil: dto.wilayah,
+        Jabatan: 'PENATUA',
+      };
+    } else if (dto.wilayah === 'PPJ') {
+      where = {
+        Jabatan: 'PPJ',
+      };
     }
+
     const args = {
       where,
     };
@@ -108,6 +117,42 @@ export class Calon1Controller {
       where,
     };
     const result = await this.prismaService.tblcalon2.findMany(args);
+    return result;
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('/votes2')
+  async findVotes2(@Query() dto: FindAllDTO) {
+    let where = {};
+
+    if (dto.wilayah && dto.wilayah.length === 2)
+      where = {
+        pemilih: {
+          Wil: dto.wilayah,
+        },
+      };
+
+    const args = {
+      where,
+      include: {
+        calon: true,
+        pemilih: true,
+      },
+    };
+    const rows = await this.prismaService.pilihanKedua.findMany(args);
+
+    const result = rows.map((row) => {
+      return {
+        id: row.id,
+        pemilihWil: row.pemilih.Wil,
+        pemilihNama: row.pemilih.Nama,
+        calonWil: row.calon.Wil,
+        calonNama: row.calon.Nama,
+        posisi: row.calon.Jabatan,
+        createdAt: moment(row.createdAt).format('DD-MM-YYYY HH:mm:ss'),
+      };
+    });
     return result;
   }
 }

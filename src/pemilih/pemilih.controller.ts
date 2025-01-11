@@ -33,6 +33,7 @@ export class PemilihController {
     try {
       const p = await this.prismaService.pengaturan.findFirst();
       const open = p.openPemilihan1 === true;
+      const open2 = p.openPemilihan2 === true;
       const where: Prisma.tblpemilihWhereInput = { nohp };
       const result = await this.prismaService.tblpemilih.findFirst({
         where,
@@ -52,6 +53,7 @@ export class PemilihController {
         voted1: result.pilihanPertama.length > 0,
         voted2: result.pilihanKedua.length > 0,
         open,
+        open2,
       };
     } catch (err) {
       const errMsg = err && err.message ? err.message : 'unknown error';
@@ -64,6 +66,7 @@ export class PemilihController {
     const p = await this.prismaService.pengaturan.findFirst();
     console.log(p);
     const open = p.openPemilihan1 === true;
+    const open2 = p.openPemilihan2 === true;
     const where: Prisma.tblpemilihWhereUniqueInput = { NoReg: noReg };
     const result = await this.prismaService.tblpemilih.findUnique({
       where,
@@ -81,6 +84,7 @@ export class PemilihController {
       voted1: result.pilihanPertama.length > 0,
       voted2: result.pilihanKedua.length > 0,
       open,
+      open2,
     };
   }
 
@@ -119,6 +123,7 @@ export class PemilihController {
     const ret = {
       sent: false,
       otp,
+      numSent,
     };
 
     // todo: send otp
@@ -139,6 +144,56 @@ export class PemilihController {
     // }
 
     if (numSent === 0) {
+      try {
+        await this.wabotService.sendOTP(nohp, otp);
+        await this.prismaService.tblpemilih.update({
+          data: { numSent: numSent + 1 },
+          where: { NoReg },
+        });
+        ret.sent = true;
+        ret.numSent = numSent + 1;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    return ret;
+  }
+
+  @Get('sendotpagain/:noreg')
+  async sendotpagain(@Param('noreg') noReg: string) {
+    const where: Prisma.tblpemilihWhereUniqueInput = { NoReg: noReg };
+    const result = await this.prismaService.tblpemilih.findUnique({
+      where,
+      include: {
+        pilihanPertama: true,
+        pilihanKedua: true,
+        pilihanKeduaPPJ: true,
+      },
+    });
+
+    const numSent = result.numSent;
+    const NoReg = result.NoReg;
+
+    let otp = result.otp;
+    const nohp = result.nohp.trim();
+
+    if (!otp) {
+      otp = (Math.floor(Math.random() * 999999) + '').padStart(6, '0');
+      await this.prismaService.tblpemilih.update({
+        data: {
+          nohp: result.nohp.trim(),
+          otp,
+        },
+        where,
+      });
+    }
+
+    const ret = {
+      sent: false,
+    };
+
+    if (numSent <= 1) {
       try {
         await this.wabotService.sendOTP(nohp, otp);
         await this.prismaService.tblpemilih.update({
@@ -167,7 +222,7 @@ export class PemilihController {
         },
       });
 
-      if (result.numTry >= 5) throw new Error('blocked');
+      if (result.numTry >= 10) throw new Error('blocked');
 
       await this.prismaService.tblpemilih.update({
         where,
