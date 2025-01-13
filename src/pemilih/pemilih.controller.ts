@@ -484,7 +484,8 @@ export class PemilihController {
       });
 
       const ppjIds: Array<string> = _.uniq(ppjs);
-      if (ppjIds.length !== 9) throw new Error('Kuota PPJ tidak valid.');
+      const MAX_PPJ = 7;
+      if (ppjIds.length !== MAX_PPJ) throw new Error('Kuota PPJ tidak valid.');
 
       const Tahap = 2;
       const toSave = [];
