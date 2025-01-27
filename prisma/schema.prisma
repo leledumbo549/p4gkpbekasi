@@ -148,3 +148,12 @@ model Pengaturan {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model KirimPesan {
+  id           Int         @id @default(autoincrement())
+  nohp         String      @db.VarChar(15) @unique
+  jumlahKirim  Int?        @db.TinyInt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
